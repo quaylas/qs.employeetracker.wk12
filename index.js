@@ -35,6 +35,31 @@ getTask = () => {
     return inquirer.prompt(questions);
 };
 
+getNewObjDetails = (objType) => {
+    let questions = [];
+
+    if(objType === 'dept'){
+        questions = [{
+            type: 'input',
+            name: 'deptName',
+            message: 'What is the name of the new department? (30 characters or fewer)',
+            validate: deptNameInput => {
+                if(!deptNameInput){
+                    console.log('You must enter a name for the new department');
+                    return false;
+                } else if (deptNameInput.length > 30) {
+                    console.log(`The department name must be fewer than 30 characters. The name you entered has ${deptNameInput.length} characers`);
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }];
+    };
+
+    return inquirer.prompt(questions);
+};
+
 const taskHandler = (task) => {
     if(task === 'View all Departments') {
         connection.query(getDepartments(),function(err, rows){
@@ -50,7 +75,19 @@ const taskHandler = (task) => {
         console.log('the task is to get employees');
     }
     else if(task === 'Add Department') {
-        console.log('the task is to add a department');
+        const query = addDepartment();
+        getNewObjDetails('dept')
+        .then(userInput => {
+            connection.query(query, 
+                {
+                    dept_name: userInput.deptName
+                }, 
+                function(err, res){
+                    if(err) throw err;
+                    console.table(`A new department has been created! \n Department Name: ${userInput.deptName} \n Department ID: ${res.insertId}`);
+                    connection.end();
+            });
+        });
     }
     else if(task === 'Add Roll') {
         console.log('the task is to add a role');
