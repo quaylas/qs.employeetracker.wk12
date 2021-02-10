@@ -1,14 +1,14 @@
 
 getDepartments = () => {
     console.log('Fetching departments ...');
-    let query = `SELECT * FROM departments`;
-    return query;
+    let sql = `SELECT * FROM departments`;
+    return sql;
 };
 
 addDepartment = () => {
     console.log('Adding department ...');
-    let query = `INSERT INTO departments SET ?`;
-    return query;
+    let sql = `INSERT INTO departments SET ?`;
+    return sql;
 };
 
 module.exports = {getDepartments, addDepartment};

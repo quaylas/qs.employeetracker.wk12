@@ -35,7 +35,7 @@ getTask = () => {
     return inquirer.prompt(questions);
 };
 
-getNewObjDetails = (objType) => {
+getNewObjDetails = (objType, questionsArray) => {
     let questions = [];
 
     if(objType === 'dept'){
@@ -55,9 +55,13 @@ getNewObjDetails = (objType) => {
                 }
             }
         }];
+        return inquirer.prompt(questions);
     };
 
-    return inquirer.prompt(questions);
+    if(objType === 'role') {
+        return inquirer.prompt(questionsArray);
+    }
+    
 };
 
 const taskHandler = (task) => {
@@ -84,13 +88,14 @@ const taskHandler = (task) => {
                 }, 
                 function(err, res){
                     if(err) throw err;
-                    console.table(`A new department has been created! \n Department Name: ${userInput.deptName} \n Department ID: ${res.insertId}`);
+                    console.log(`A new department has been created! \n Department Name: ${userInput.deptName} \n Department ID: ${res.insertId}`);
                     connection.end();
             });
         });
     }
-    else if(task === 'Add Roll') {
+    else if(task === 'Add Role') {
         console.log('the task is to add a role');
+        console.log(depts);
     }
     else if(task === 'Add Employee') {
         console.log('the task is to add an employee');
