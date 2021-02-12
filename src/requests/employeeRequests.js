@@ -2,14 +2,37 @@ const inquirer = require("inquirer");
 
 async function  getEmployees()  {
     console.log('Fetching Employees ...');
-    let sql = `SELECT * FROM employees`;
+    let sql = `SELECT e.id, e.first_name, e.last_name, title, dept_name AS department, salary, CONCAT(m.first_name, ' ', m.last_name) as manager FROM employees e 
+    LEFT JOIN roles ON e.role_id = roles.id
+    LEFT JOIN departments on roles.department_id = departments.id
+    LEFT JOIN employees m on m.id = e.manager_id`;
 
     return sql;
 };
 
-async function getNewEmpDetails(roleArray) {
-    let roles = roleArray.map(role => { return `${role.title} (ID: ${role.id})`});
+async function  getManagers() { 
+    console.log('Fetching Managers ...');
+    let sql = `SELECT DISTINCT e.manager_id as id, CONCAT(m.first_name, ' ', m.last_name) as name FROM employees e
+    LEFT JOIN employees m ON e.manager_id = m.id WHERE e.manager_id IS NOT NULL`;
 
+    return sql;
+}
+
+async function getNewEmpDetails(roleArray, mgrArray) {
+    let roles = roleArray.map(role => { 
+        return {
+            name: role.title,
+            value: role.id
+        };
+    });
+    let mgrs = mgrArray.map(mgr => { 
+        if(mgr.id !== 'null'){
+            return {
+                name: mgr.name,
+                value: mgr.id
+            };
+        }
+    });
     let questions = [
         {
             type: 'input',
@@ -58,7 +81,7 @@ async function getNewEmpDetails(roleArray) {
             type: 'list',
             name: 'manager_id',
             message: 'Select the appropriate manager',
-            choices: roles,
+            choices: mgrs,
             when:  ({has_mgr}) => {
                 if(has_mgr) {
                     return true;
@@ -78,7 +101,7 @@ async function addEmployee(newEmpInput) {
     let role_id = newEmpInput.role_id.split(': ')[1];
     let manager_id = null;
     if(newEmpInput.manager_id){
-        manager_id = parseInt(newEmpInput.manager_id.split(': ')[1]);
+        manager_id = newEmpInput.manager_id;
         };
     let params = {
         first_name: newEmpInput.first_name,
@@ -92,4 +115,4 @@ async function addEmployee(newEmpInput) {
     };
 };
 
-module.exports = {getEmployees, addEmployee, getNewEmpDetails};
+module.exports = {getEmployees, addEmployee, getNewEmpDetails, getManagers};

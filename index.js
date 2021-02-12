@@ -5,7 +5,7 @@ const cTable = require('console.table');
 
 const { getDepartments, addDepartment, getNewDepartmentDetails } = require('./src/requests/departmentRequests');
 const { getRoles, addRole, getNewRoleDetails } = require('./src/requests/roleRequests');
-const { getEmployees, addEmployee, updateEmployee, getNewEmpDetails } = require('./src/requests/employeeRequests');
+const { getEmployees, addEmployee, updateEmployee, getNewEmpDetails, getManagers } = require('./src/requests/employeeRequests');
 
 
 
@@ -86,12 +86,14 @@ async function main () {
             case 'Add Employee' : {
                 let sql1 = await getRoles();
                 const [roles, fields] = await connection.query(sql1);
-                // let sql2 = await getMgrs();
-                // const [mgrs, mgrFields] = await connection.query(sql2);
-                const newEmpInput = await getNewEmpDetails(roles);
-                const addEmp =  await addEmployee(newEmpInput);
-                const [newEmp] = await connection.query(addEmp.sql, addEmp.params);
-                console.log(`Employee ${addEmp.params.first_name} ${addEmp.params.last_name} (ID:${newEmp.insertId}) has been added!`);
+                let sql2 = await getManagers();
+                const [mgrs, mgrFields] = await connection.query(sql2);
+                console.log(mgrs);
+                const newEmpInput = await getNewEmpDetails(roles, mgrs);
+                console.log(newEmpInput);
+                // const addEmp =  await addEmployee(newEmpInput);
+                // const [newEmp] = await connection.query(addEmp.sql, addEmp.params);
+                // console.log(`Employee ${addEmp.params.first_name} ${addEmp.params.last_name} (ID:${newEmp.insertId}) has been added!`);
                 break;
             }
 
