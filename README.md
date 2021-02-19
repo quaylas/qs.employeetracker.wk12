@@ -10,7 +10,7 @@
   
   ## Table of Contents
 
-  * [User Story and Acceptance Criteria]
+  * [User Story and Acceptance Criteria](#user-story-and-acceptance-criteria)
   * [Installation](#installation)
   * [Usage](#usage)
   * [Contributions](#contributions)
