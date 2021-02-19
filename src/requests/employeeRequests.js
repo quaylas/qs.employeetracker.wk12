@@ -10,13 +10,49 @@ async function  getEmployees()  {
     return sql;
 };
 
-async function  getManagers() { 
+async function getManagers() { 
     console.log('Fetching Managers ...');
     let sql = `SELECT DISTINCT e.manager_id as id, CONCAT(m.first_name, ' ', m.last_name) as name FROM employees e
     LEFT JOIN employees m ON e.manager_id = m.id WHERE e.manager_id IS NOT NULL`;
 
     return sql;
 }
+
+async function getEmpUpdateDetails(updateType, empArray, roleArray) {
+    let employees = empArray.map(emp => {
+        return {
+            name: emp.first_name + ' ' + emp.last_name,
+            value: emp.id
+        }
+    });
+    let roles = roleArray.map(role => { 
+        return {
+            name: role.title,
+            value: role.id
+        };
+    });
+    switch(updateType) {
+        case 'role' : {
+            let questions = [
+                
+                {
+                    type: 'list',
+                    name: 'id',
+                    message: 'What employee would you like to update?',
+                    choices: employees
+                },
+                {
+                            type: 'list',
+                            name: 'role_id',
+                            message: 'What is the employee\'s new role?',
+                            choices: roles
+                        }
+            ]
+            return inquirer.prompt(questions);
+            break;
+        }
+    }
+};
 
 async function getNewEmpDetails(roleArray, mgrArray) {
     let roles = roleArray.map(role => { 
@@ -98,7 +134,7 @@ async function getNewEmpDetails(roleArray, mgrArray) {
 async function addEmployee(newEmpInput) {
     console.log('Adding Role ...');
     let sql = `INSERT INTO employees SET ?`;
-    let role_id = newEmpInput.role_id.split(': ')[1];
+    let role_id = newEmpInput.role_id;
     let manager_id = null;
     if(newEmpInput.manager_id){
         manager_id = newEmpInput.manager_id;
@@ -106,7 +142,7 @@ async function addEmployee(newEmpInput) {
     let params = {
         first_name: newEmpInput.first_name,
         last_name: newEmpInput.last_name,
-        role_id: parseInt(role_id),
+        role_id: role_id,
         manager_id: manager_id
     };
     return {
@@ -115,4 +151,28 @@ async function addEmployee(newEmpInput) {
     };
 };
 
-module.exports = {getEmployees, addEmployee, getNewEmpDetails, getManagers};
+async function updateEmployee(updateType, empUpdateInput) {
+    console.log('Updating Employee ...');
+    let sql = `UPDATE employees SET ? WHERE ?`;
+    let params = [];
+    switch(updateType){
+        case 'role' : {
+            params = [
+                {
+                    role_id: empUpdateInput.role_id
+                }, 
+                {
+                    id: empUpdateInput.id
+                }
+            ]
+            return {
+                sql,
+                params
+            }
+            break;
+        }
+    }
+
+}
+
+module.exports = {getEmployees, addEmployee, getNewEmpDetails, getManagers, updateEmployee, getEmpUpdateDetails};

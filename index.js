@@ -5,7 +5,7 @@ const cTable = require('console.table');
 
 const { getDepartments, addDepartment, getNewDepartmentDetails } = require('./src/requests/departmentRequests');
 const { getRoles, addRole, getNewRoleDetails } = require('./src/requests/roleRequests');
-const { getEmployees, addEmployee, updateEmployee, getNewEmpDetails, getManagers } = require('./src/requests/employeeRequests');
+const { getEmployees, addEmployee, updateEmployee, getNewEmpDetails, getManagers, getEmpUpdateDetails } = require('./src/requests/employeeRequests');
 
 
 
@@ -15,7 +15,7 @@ async function getTask() {
             type:'list',
             name:'task',
             message: 'Which task would you like to complete?',
-            choices: ['View all Departments','View all Roles','View all Employees','Add Department', 'Add Role','Add Employee','Update Employee Roll', 'Exit']
+            choices: ['View all Departments','View all Roles','View all Employees','Add Department', 'Add Role','Add Employee','Update Employee Role', 'Exit']
         }
     ];
 
@@ -88,12 +88,22 @@ async function main () {
                 const [roles, fields] = await connection.query(sql1);
                 let sql2 = await getManagers();
                 const [mgrs, mgrFields] = await connection.query(sql2);
-                console.log(mgrs);
                 const newEmpInput = await getNewEmpDetails(roles, mgrs);
-                console.log(newEmpInput);
-                // const addEmp =  await addEmployee(newEmpInput);
-                // const [newEmp] = await connection.query(addEmp.sql, addEmp.params);
-                // console.log(`Employee ${addEmp.params.first_name} ${addEmp.params.last_name} (ID:${newEmp.insertId}) has been added!`);
+                const addEmp =  await addEmployee(newEmpInput);
+                const [newEmp] = await connection.query(addEmp.sql, addEmp.params);
+                console.log(`Employee ${addEmp.params.first_name} ${addEmp.params.last_name} (ID:${newEmp.insertId}) has been added!`);
+                break;
+            }
+
+            case 'Update Employee Role' : {
+                let sql1 = await getRoles();
+                const [roles, fields] = await connection.query(sql1);
+                let sql2 = await getEmployees();
+                const [employees, empfields] = await connection.query(sql2);
+                const updateEmpInput = await getEmpUpdateDetails('role', employees, roles);
+                const updateEmp = await updateEmployee('role', updateEmpInput);
+                const [updatedEmp] = await connection.query(updateEmp.sql, updateEmp.params);
+                console.log(`Employee\'s Role has been updated!`);
                 break;
             }
 
@@ -108,95 +118,3 @@ async function main () {
 };
 
 main();
-// // Create connection to database
-// const connection = mysql.createConnection({
-//     host: 'localhost', 
-//     port: 3306,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASS,
-//     database: 'empDB'
-// });
-
-// connection.connect(err => {
-//     if(err) throw err;
-//     console.log(`connected as id ${connection.threadId}`);
-//     afterConnection();
-// });
-
-
-
-// getNewObjDetails = (objType) => {
-//     let questions = [];
-
-//     if(objType === 'dept'){
-//         questions = [{
-//             type: 'input',
-//             name: 'deptName',
-//             message: 'What is the name of the new department? (30 characters or fewer)',
-//             validate: deptNameInput => {
-//                 if(!deptNameInput){
-//                     console.log('You must enter a name for the new department');
-//                     return false;
-//                 } else if (deptNameInput.length > 30) {
-//                     console.log(`The department name must be fewer than 30 characters. The name you entered has ${deptNameInput.length} characers`);
-//                     return false;
-//                 } else {
-//                     return true;
-//                 }
-//             }
-//         }];
-//     };
-
-//     return inquirer.prompt(questions);
-// };
-
-// const taskHandler = (task) => {
-//     if(task === 'View all Departments') {
-//         connection.query(getDepartments(),function(err, rows){
-//             if(err) throw err;
-//             console.table('Departments', rows);
-//         });
-//         connection.end();
-//     }
-//     else if(task === 'View all Roles') {
-//         console.log('the task is to get roles');
-//     }
-//     else if(task === 'View all Employees') {
-//         console.log('the task is to get employees');
-//     }
-//     else if(task === 'Add Department') {
-//         const query = addDepartment();
-//         getNewObjDetails('dept')
-//         .then(userInput => {
-//             connection.query(query, 
-//                 {
-//                     dept_name: userInput.deptName
-//                 }, 
-//                 function(err, res){
-//                     if(err) throw err;
-//                     console.table(`A new department has been created! \n Department Name: ${userInput.deptName} \n Department ID: ${res.insertId}`);
-//                     connection.end();
-//             });
-//         });
-//     }
-//     else if(task === 'Add Roll') {
-//         console.log('the task is to add a role');
-//     }
-//     else if(task === 'Add Employee') {
-//         console.log('the task is to add an employee');
-//     }
-//     else if(task === 'Update Employee Roll') {
-//         console.log('the task is to update an employee\'s role');
-//     }
-// };
-
-// afterConnection = () => {
-//     getTask()
-//         .then(response => {
-//             taskHandler(response.task);
-//         })
-//         .catch(err => {
-//             console.log(err);
-//             connection.end;
-//         }); 
-// };
